@@ -45,7 +45,6 @@ void reply(HttpRequest req, int status, Object data, {bool html = false}) {
 
 Future<void> main(List<String> args) async {
   final fast = args.contains('--demo-fast');
-  final lan = args.contains('--lan');
   final duration =
       (fast ? const Duration(seconds: 20) : const Duration(hours: 2))
           .inMilliseconds;
@@ -62,7 +61,7 @@ Future<void> main(List<String> args) async {
 
   final guest = File('assets/menu.html').readAsStringSync();
   final server = await HttpServer.bind(
-    lan ? InternetAddress.anyIPv4 : InternetAddress.loopbackIPv4,
+    InternetAddress.loopbackIPv4,
     8787,
   );
   save();
@@ -71,16 +70,6 @@ Future<void> main(List<String> args) async {
       ((DateTime.now().millisecondsSinceEpoch - (state['start'] as int)) ~/
           duration);
   final hosts = {'localhost', '127.0.0.1'};
-  if (lan) {
-    for (final net in await NetworkInterface.list(
-      type: InternetAddressType.IPv4,
-    )) {
-      for (final ip in net.addresses) {
-        hosts.add(ip.address);
-        print('Tisch 1: http://${ip.address}:8787/tisch/1');
-      }
-    }
-  }
   print('Bestellserver: http://127.0.0.1:8787/tisch/1');
   final tablePath = RegExp(r'^/tisch/([1-9]|[12][0-9]|30)(?:/([1-9][0-9]*))?$');
   server.listen((req) async {

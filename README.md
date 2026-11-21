@@ -17,9 +17,8 @@ Der gedruckte QR enthält die feste Adresse `/tisch/1` (Tische 1 bis 30). Sie le
 
 Für einen schnellen separaten Test den normalen Server beenden und `dart run bin/server.dart --demo-fast` starten. Die Fenster dauern dann 20 Sekunden und nutzen einen eigenen Datenbestand. Den alten Link nach dem Wechsel neu laden und anschließend den festen Link öffnen.
 
-## Handy im Café-WLAN
+## Tischkarten drucken
 
-Für einen Gerätetest den Server mit `dart run bin/server.dart --lan` starten. Auf dem Handy die im Terminal angezeigte LAN-Adresse für Tisch 1 öffnen. Unter `http://<LAN-IP>:8787/qr` lassen sich die QR-Karten für alle 30 Tische auswählen und drucken. Beide Geräte brauchen gegenseitigen Zugriff im lokalen Netz. Die Flutter-App für diesen Test separat mit `flutter run -d edge` auf dem Server-PC starten.
+Unter <http://127.0.0.1:8787/qr> einen Tisch auswählen und seine Karte drucken. Die lokale Vorschau verwendet die Adresse des Testservers. Für den späteren Betrieb auf haze-chill.com werden die Karten mit der öffentlichen Domain erstellt.
 
-Im Prototyp ist die Erreichbarkeit im lokalen Netz die Zugangsvoraussetzung. Die Team-API ist auf den Server-PC beschränkt. Der LAN-Modus ist für ein lokales Testnetz gedacht. Für den späteren Betrieb auf haze-chill.com sind ein geprüfter WLAN-Nachweis, HTTPS und Team-Anmeldung erforderlich. Keine Portweiterleitung einrichten. Beispieldaten und Preise dienen dem Test.
-
+Die Gültigkeit richtet sich nach Tisch und aktuellem Zeitfenster. Wer die feste Tischadresse gespeichert hat, kann darüber auch von unterwegs den aktuellen Link öffnen. Die Rotation allein bestätigt keine Anwesenheit am Tisch.
