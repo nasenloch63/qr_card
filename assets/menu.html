@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haze &amp; Chill · Speisekarte</title>
+<style>
+:root{color-scheme:dark;font:16px/1.45 system-ui,sans-serif;color:#f5f7fc;background:#0e151b}
+*{box-sizing:border-box}body{max-width:680px;margin:auto;padding:24px 20px 48px;background:radial-gradient(ellipse at 86% 0%,#1e3739,transparent 55%)}header,.row,.step,.summary{display:flex;align-items:center;justify-content:space-between;gap:12px}header{border-bottom:1px solid #ffffff22;padding-bottom:16px}header span{color:#adc6bc}h1{font-size:clamp(30px,8vw,48px);line-height:1.1;letter-spacing:-.045em;margin:32px 0 22px}h2{font-size:20px}button{cursor:pointer;color:inherit;font:inherit;border:1px solid #ffffff29;border-radius:14px;background:#23303a;padding:10px 14px}button:focus-visible{outline:3px solid #b0ffcd}button:disabled{opacity:.5}#grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tile{text-align:left;display:grid;align-content:space-between;min-height:100px;background:linear-gradient(140deg,#243a3e,#1b242e);font-weight:650}.tile span{font-size:25px}.row{border-bottom:1px solid #ffffff20;padding:13px 0}.row small{display:block;color:#b8c8c9}.step{gap:8px}.step button{min-width:42px}section{margin-top:24px}#send{background:#b4f1cf;color:#0f2c23;font-weight:700;width:100%;margin-top:16px}.muted{color:#b8c8c9}#msg{color:#c0fbd4}button[hidden],section[hidden]{display:none}
+</style>
+<header><b>Haze &amp; Chill</b><span id="table"></span></header>
+<h1>Speisekarte</h1><div id="grid"></div>
+<section id="products" hidden><button id="back">← Kategorien</button><h2 id="category"></h2><div id="list"></div></section>
+<section><div class="summary"><h2>Warenkorb</h2><b id="total">0,00 €</b></div><div id="basket"></div><button id="send" disabled>Bestellung abschicken</button><p id="msg" role="status"></p></section>
+<script>
+const $=id=>document.getElementById(id);
+const [, ,table,slot]=location.pathname.split('/');
+$('table').textContent='Tisch '+table;
+const storage='hc-cart-'+table;
+let saved={};try{saved=JSON.parse(sessionStorage.getItem(storage))||{}}catch{}
+let cart=saved.cart||{},key=saved.key,items=[],active='',busy=false;
+function persist(){sessionStorage.setItem(storage,JSON.stringify({cart,key}))}
+function money(c){return (c/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})}
+function tag(type,text){const el=document.createElement(type);el.textContent=text;return el}
+function adjust(id,delta){if(busy)return;const n=Math.min(30,Math.max(0,(cart[id]||0)+delta));if(n)cart[id]=n;else delete cart[id];key=null;persist();$('msg').textContent='';render()}
+function row(item,basket){const el=tag('div','');el.className='row';const label=tag('div',item.name);label.append(tag('small',money(item.price)));el.append(label);const step=tag('div','');step.className='step';
+for(const [symbol,delta] of [['−',-1],['+',1]]){if(delta===1)step.append(tag('span',String(cart[item.id]||0)));const btn=tag('button',symbol);btn.disabled=busy||(delta<0?!cart[item.id]:cart[item.id]>=30);btn.setAttribute('aria-label',item.name+(delta>0?' hinzufügen':' entfernen'));btn.onclick=()=>adjust(item.id,delta);step.append(btn)}el.append(step);return el}
+function render(){const selected=items.filter(i=>cart[i.id]);$('grid').style.display=active?'none':'grid';$('products').hidden=!active;$('category').textContent=active;
+const products=items.filter(i=>i.available&&i.category===active);$('list').replaceChildren(...(products.length?products.map(i=>row(i)): [tag('p','Aktuell ausverkauft.')]));
+$('basket').replaceChildren(...(selected.length?selected.map(i=>row(i,true)):[tag('small','Dein Warenkorb ist leer.')]));$('total').textContent=money(selected.reduce((s,i)=>s+i.price*cart[i.id],0));$('send').disabled=busy||!selected.length}
+$('back').onclick=()=>{active='';render()};
+async function init(){const r=await fetch('/api/menu');if(!r.ok)throw Error();const data=await r.json();items=data.items;for(const id of Object.keys(cart)){if(!items.some(i=>String(i.id)===id&&i.available)){delete cart[id];key=null}}persist();
+data.categories.forEach((c,n)=>{const btn=tag('button','');btn.className='tile';btn.append(tag('span',['🍹','🍺','☕','🥪','🍿','🍓'][n]),tag('b',c));btn.onclick=()=>{active=c;render()};$('grid').append(btn)});render()}
+$('send').onclick=async()=>{if(busy)return;busy=true;render();key=key||Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');persist();
+try{const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({table:+table,slot:+slot,key,cart,prices:Object.fromEntries(items.map(i=>[i.id,i.price]))})});const data=await res.json();if(!res.ok)throw Error(data);cart={};key=null;persist();$('msg').textContent='Bestellung #'+data.number+' ist an der Theke eingegangen.'}catch(e){$('msg').textContent=e.message}finally{busy=false;render()}};
+init().catch(()=>{$('msg').textContent='Speisekarte konnte nicht geladen werden. Bitte lade die Seite erneut.'});
+</script></html>

@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Bestellserver",
+      "type": "dart",
+      "request": "launch",
+      "program": "bin/server.dart",
+      "console": "terminal"
+    },
+    {
+      "name": "Team-App",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "edge"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Café testen",
+      "configurations": [
+        "Bestellserver",
+        "Team-App"
+      ],
+      "stopAll": true
+    }
+  ]
+}

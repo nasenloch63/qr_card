@@ -1,0 +1,12 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tischkarten · Haze &amp; Chill</title><style>
+body{font:18px system-ui;background:#112023;color:#f4faf7;display:grid;justify-content:center;padding:5vh 18px}article{text-align:center;padding:24px;background:white;color:#15252a;border-radius:20px;margin:20px 0}img{width:min(270px,70vw);height:auto;image-rendering:pixelated}select,button{font:inherit;padding:8px}small{display:block;overflow-wrap:anywhere}@media print{nav,button{display:none}body{background:white}}
+</style><nav><label>Tisch auswählen <select id="table"></select></label></nav><article><b>Haze &amp; Chill</b><h1></h1><div id="qr"></div><p>Speisekarte öffnen &amp; bestellen</p><small></small></article><button onclick="print()">Tischkarte drucken</button><script src="/qrcode.js"></script><script>
+const select=document.querySelector('select');
+for(let i=1;i<=30;i++)select.add(new Option(i,i));
+function draw(){const url=location.origin+'/tisch/'+select.value;
+const qr=qrcode(0,'M');qr.addData(url);qr.make();
+document.querySelector('#qr').innerHTML=qr.createImgTag(8,32);
+document.querySelector('h1').textContent='Tisch '+select.value;
+document.querySelector('small').textContent=url}
+select.onchange=draw;draw();
+</script></html>

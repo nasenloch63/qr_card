@@ -19,6 +19,7 @@ Für einen schnellen separaten Test den normalen Server beenden und `dart run bi
 
 ## Handy im Café-WLAN
 
-Für einen Gerätetest den Server mit `dart run bin/server.dart --lan` starten. Auf dem Handy die im Terminal angezeigte LAN-Adresse für Tisch 1 öffnen. In Edge lässt sich aus **dieser festen Tischadresse** über „QR-Code für diese Seite erstellen“ ein QR erzeugen. Dafür den festen Link explizit als QR-Inhalt verwenden, da die Seite beim Öffnen auf den Zeitlink wechselt. Alternativ einen QR-Generator mit der festen Adresse verwenden. Beide Geräte brauchen gegenseitigen Zugriff im lokalen Netz. Die Flutter-App für diesen Test separat mit `flutter run -d edge` auf dem Server-PC starten.
+Für einen Gerätetest den Server mit `dart run bin/server.dart --lan` starten. Auf dem Handy die im Terminal angezeigte LAN-Adresse für Tisch 1 öffnen. Unter `http://<LAN-IP>:8787/qr` lassen sich die QR-Karten für alle 30 Tische auswählen und drucken. Beide Geräte brauchen gegenseitigen Zugriff im lokalen Netz. Die Flutter-App für diesen Test separat mit `flutter run -d edge` auf dem Server-PC starten.
 
 Im Prototyp ist die Erreichbarkeit im lokalen Netz die Zugangsvoraussetzung. Die Team-API ist auf den Server-PC beschränkt. Der LAN-Modus ist für ein lokales Testnetz gedacht. Für den späteren Betrieb auf haze-chill.com sind ein geprüfter WLAN-Nachweis, HTTPS und Team-Anmeldung erforderlich. Keine Portweiterleitung einrichten. Beispieldaten und Preise dienen dem Test.
+
