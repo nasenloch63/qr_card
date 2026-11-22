@@ -1,1 +1,84 @@
-<!doctype html><html lang="de"><head><base href="$FLUTTER_BASE_HREF"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Haze &amp; Chill · Team</title></head><body><script src="flutter_bootstrap.js" async></script></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Haze &amp; Chill · Team</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      color: #faf5ff;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+    }
+    #hc-splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background:
+        radial-gradient(ellipse 65% 50% at 22% 18%, rgba(139, 92, 246, 0.2), transparent 65%),
+        radial-gradient(ellipse 60% 45% at 80% 82%, rgba(16, 185, 129, 0.14), transparent 65%),
+        #0a0a0a;
+      z-index: 9999;
+      transition: opacity 0.35s ease;
+    }
+    #hc-splash.done {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .hc-splash-logo {
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(125deg, #c4b5fd, #f5d0fe 50%, #6ee7b7);
+      -webkit-mask-image: url(favicon.svg);
+      mask-image: url(favicon.svg);
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      filter: drop-shadow(0 0 22px rgba(139, 92, 246, 0.45)) drop-shadow(0 0 36px rgba(16, 185, 129, 0.2));
+      animation: hc-pulse 2.2s ease-in-out infinite;
+    }
+    .hc-splash-label {
+      font-size: 12px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(110, 231, 183, 0.85);
+      font-weight: 600;
+    }
+    @keyframes hc-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.92; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="hc-splash" aria-hidden="true">
+    <div class="hc-splash-logo"></div>
+    <div class="hc-splash-label">Haze &amp; Chill · Team</div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var splash = document.getElementById('hc-splash');
+      if (splash) {
+        splash.classList.add('done');
+        setTimeout(function () { splash.remove(); }, 400);
+      }
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

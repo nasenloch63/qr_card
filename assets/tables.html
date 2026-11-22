@@ -1,12 +1,503 @@
-<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tischkarten · Haze &amp; Chill</title><style>
-body{font:18px system-ui;background:#112023;color:#f4faf7;display:grid;justify-content:center;padding:5vh 18px}article{text-align:center;padding:24px;background:white;color:#15252a;border-radius:20px;margin:20px 0}img{width:min(270px,70vw);height:auto;image-rendering:pixelated}select,button{font:inherit;padding:8px}small{display:block;overflow-wrap:anywhere}@media print{nav,button{display:none}body{background:white}}
-</style><nav><label>Tisch auswählen <select id="table"></select></label></nav><article><b>Haze &amp; Chill</b><h1></h1><div id="qr"></div><p>Speisekarte öffnen &amp; bestellen</p><small></small></article><button onclick="print()">Tischkarte drucken</button><script src="/qrcode.js"></script><script>
-const select=document.querySelector('select');
-for(let i=1;i<=30;i++)select.add(new Option(i,i));
-function draw(){const url=location.origin+'/tisch/'+select.value;
-const qr=qrcode(0,'M');qr.addData(url);qr.make();
-document.querySelector('#qr').innerHTML=qr.createImgTag(8,32);
-document.querySelector('h1').textContent='Tisch '+select.value;
-document.querySelector('small').textContent=url}
-select.onchange=draw;draw();
-</script></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Tischkarten · Haze &amp; Chill</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    @font-face{font-family:'Syne';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Syne-SemiBold.ttf') format('truetype')}
+    @font-face{font-family:'Syne';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/Syne-Bold.ttf') format('truetype')}
+    @font-face{font-family:'Syne';font-style:normal;font-weight:800;font-display:swap;src:url('/fonts/Syne-ExtraBold.ttf') format('truetype')}
+    @font-face{font-family:'DM Sans';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/DMSans-Regular.ttf') format('truetype')}
+    @font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/DMSans-Medium.ttf') format('truetype')}
+    @font-face{font-family:'DM Sans';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/DMSans-SemiBold.ttf') format('truetype')}
+    @font-face{font-family:'DM Sans';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/DMSans-Bold.ttf') format('truetype')}
+
+    :root {
+      color-scheme: dark;
+      --bg: #0a0a0a;
+      --border: rgba(255, 255, 255, 0.11);
+      --emerald: #10b981;
+      --emerald-light: #6ee7b7;
+      --teal: #2dd4bf;
+      --violet: #8b5cf6;
+      --violet-light: #c4b5fd;
+      --fuchsia-light: #f5d0fe;
+      --font-display: 'Syne', system-ui, sans-serif;
+      --font-sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      font-family: var(--font-sans);
+      color: #faf5ff;
+      background:
+        radial-gradient(ellipse 70% 45% at 18% 5%, rgba(139, 92, 246, 0.19), transparent 62%),
+        radial-gradient(ellipse 65% 45% at 85% 92%, rgba(16, 185, 129, 0.14), transparent 60%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top bar */
+    .topbar {
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(115deg, var(--violet-light), var(--fuchsia-light) 48%, var(--emerald-light));
+      -webkit-mask-image: url('/logo.svg');
+      mask-image: url('/logo.svg');
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.45));
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .brand-tag {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--emerald-light);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Main workspace */
+    .stage {
+      flex: 1;
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 28px 20px 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Controls panel */
+    .controls {
+      width: 100%;
+      max-width: 460px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.045);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .control-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(237, 233, 254, 0.78);
+    }
+
+    .table-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font: 600 18px/1 var(--font-sans);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      border-color: rgba(52, 211, 153, 0.5);
+      background: rgba(16, 185, 129, 0.14);
+      color: var(--emerald-light);
+    }
+
+    select {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      background: #14121c;
+      color: #ffffff;
+      font: 700 14px var(--font-sans);
+      cursor: pointer;
+    }
+
+    select:focus-visible,
+    button:focus-visible {
+      outline: 2px solid rgba(52, 211, 153, 0.85);
+      outline-offset: 2px;
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .theme-btn {
+      padding: 6px 13px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(221, 214, 254, 0.7);
+      font: 600 12.5px var(--font-sans);
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .theme-btn.active {
+      background: rgba(139, 92, 246, 0.85);
+      color: #ffffff;
+    }
+
+    .print-btn {
+      width: 100%;
+      max-width: 460px;
+      padding: 14px 24px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--emerald), var(--teal));
+      color: #0a0a0a;
+      font-family: var(--font-sans);
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: 0.005em;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
+      transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.16s ease;
+    }
+
+    .print-btn:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 0 34px rgba(16, 185, 129, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Printable Table Card */
+    article.card {
+      position: relative;
+      width: 100%;
+      max-width: 390px;
+      padding: 32px 28px 26px;
+      border-radius: 28px;
+      text-align: center;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    /* Print-friendly light card (default) */
+    article.card.light {
+      background: #ffffff;
+      color: #0a0a0a;
+      border: 2px solid #e4e4e7;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    }
+
+    article.card.light::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 6px;
+      background: linear-gradient(90deg, #8b5cf6, #ec4899 50%, #10b981);
+    }
+
+    /* Dark Lounge card (laminated table tent) */
+    article.card.dark {
+      background:
+        radial-gradient(ellipse 90% 55% at 15% 0%, rgba(139, 92, 246, 0.28), transparent 65%),
+        radial-gradient(ellipse 80% 55% at 90% 100%, rgba(16, 185, 129, 0.22), transparent 65%),
+        #0a0a0a;
+      color: #faf5ff;
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 40px rgba(139, 92, 246, 0.16);
+    }
+
+    .card-logo-wrap {
+      display: grid;
+      place-items: center;
+      margin: 4px auto 14px;
+    }
+
+    .card-logo-light {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .card-logo-dark {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      display: none;
+      filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.45)) drop-shadow(0 0 20px rgba(16, 185, 129, 0.2));
+    }
+
+    article.card.dark .card-logo-light { display: none; }
+    article.card.dark .card-logo-dark { display: block; }
+
+    .card-eyebrow {
+      margin: 0 0 6px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #059669;
+    }
+
+    article.card.dark .card-eyebrow { color: var(--emerald-light); }
+
+    h1 {
+      margin: 0 0 18px;
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+    }
+
+    .qr-frame {
+      display: inline-block;
+      padding: 12px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1.5px solid #e4e4e7;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    article.card.dark .qr-frame {
+      border-color: rgba(110, 231, 183, 0.35);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    #qr img {
+      display: block;
+      width: min(230px, 64vw);
+      height: auto;
+      image-rendering: pixelated;
+    }
+
+    .card-cta {
+      margin: 18px 0 6px;
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .card-sub {
+      margin: 0;
+      font-size: 13px;
+      color: #52525b;
+    }
+
+    article.card.dark .card-sub { color: rgba(237, 233, 254, 0.72); }
+
+    .card-footer {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #e4e4e7;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    article.card.dark .card-footer { border-top-color: rgba(255, 255, 255, 0.12); }
+
+    .card-url {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11.5px;
+      color: #71717a;
+      overflow-wrap: anywhere;
+    }
+
+    article.card.dark .card-url { color: rgba(196, 181, 253, 0.7); }
+
+    .card-brand-foot {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7c3aed;
+    }
+
+    article.card.dark .card-brand-foot { color: var(--emerald-light); }
+
+    @media print {
+      @page { margin: 14mm; }
+      body {
+        background: #ffffff !important;
+        min-height: auto;
+      }
+      .topbar, .controls, .print-btn { display: none !important; }
+      .stage { padding: 0; }
+      article.card {
+        box-shadow: none !important;
+        margin: 10mm auto;
+      }
+      article.card.light {
+        border: 1.5px solid #d4d4d8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true"></span>
+        <span class="brand-title">Haze &amp; Chill</span>
+      </div>
+      <span class="brand-tag">QR-Tischkarten</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <nav class="controls" aria-label="Tischkarte konfigurieren">
+      <div class="control-row">
+        <span class="control-label">Tisch auswählen</span>
+        <div class="table-picker">
+          <button id="prev" class="icon-btn" type="button" aria-label="Vorheriger Tisch">‹</button>
+          <select id="table" aria-label="Tischnummer"></select>
+          <button id="next" class="icon-btn" type="button" aria-label="Nächster Tisch">›</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Kartendesign</span>
+        <div class="theme-toggle" role="group" aria-label="Kartendesign wählen">
+          <button id="mode-light" class="theme-btn active" type="button">Hell (Druck)</button>
+          <button id="mode-dark" class="theme-btn" type="button">Dark Lounge</button>
+        </div>
+      </div>
+    </nav>
+
+    <article id="card" class="card light">
+      <div class="card-logo-wrap">
+        <img class="card-logo-light" src="/logo.png" alt="Haze &amp; Chill Café Logo">
+        <img class="card-logo-dark" src="/logo.svg" alt="Haze &amp; Chill Café Logo">
+      </div>
+      <p class="card-eyebrow">Café · Gaming Lounge · Kassel</p>
+      <h1 id="heading">Tisch 1</h1>
+      <div class="qr-frame">
+        <div id="qr"></div>
+      </div>
+      <p class="card-cta">Speisekarte öffnen &amp; direkt bestellen</p>
+      <p class="card-sub">Kamera draufhalten — Drinks &amp; Snacks kommen direkt an deinen Tisch.</p>
+      <div class="card-footer">
+        <small id="url" class="card-url"></small>
+        <span class="card-brand-foot">haze-chill.com · @haze_and_chill_cafe</span>
+      </div>
+    </article>
+
+    <button class="print-btn" type="button" onclick="print()">Tischkarte drucken</button>
+  </main>
+
+  <script src="/qrcode.js"></script>
+  <script>
+    const select = document.getElementById('table');
+    const card = document.getElementById('card');
+    const modeLight = document.getElementById('mode-light');
+    const modeDark = document.getElementById('mode-dark');
+
+    for (let i = 1; i <= 30; i++) select.add(new Option('Tisch ' + i, i));
+
+    function draw() {
+      const n = select.value;
+      const url = location.origin + '/tisch/' + n;
+      const qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      document.getElementById('qr').innerHTML = qr.createImgTag(8, 28);
+      document.getElementById('heading').textContent = 'Tisch ' + n;
+      document.getElementById('url').textContent = url;
+    }
+
+    function setTheme(dark) {
+      card.classList.toggle('dark', dark);
+      card.classList.toggle('light', !dark);
+      modeDark.classList.toggle('active', dark);
+      modeLight.classList.toggle('active', !dark);
+    }
+
+    document.getElementById('prev').onclick = () => {
+      const v = Math.max(1, Number(select.value) - 1);
+      select.value = String(v);
+      draw();
+    };
+    document.getElementById('next').onclick = () => {
+      const v = Math.min(30, Number(select.value) + 1);
+      select.value = String(v);
+      draw();
+    };
+    modeLight.onclick = () => setTheme(false);
+    modeDark.onclick = () => setTheme(true);
+    select.onchange = draw;
+    draw();
+  </script>
+</body>
+</html>
